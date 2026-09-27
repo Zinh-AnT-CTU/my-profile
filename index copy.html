@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vĩnh An | Portfolio Chuyên Nghiệp</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Thêm font Playpen Sans cho cảm giác nhí nhảnh GenZ -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;500&family=Playpen+Sans:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Canvas removed -->
+
+    <div class="glow-bg"></div>
+
+    <nav class="navbar">
+        <div class="logo">Vĩnh<span class="highlight">An</span>.</div>
+        <ul class="nav-links">
+            <li><a href="#services">Dịch Vụ</a></li>
+            <li><a href="#home">Trang Chủ</a></li>
+            <li><a href="#about">Về Tôi</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <span class="badge">Xin chào, tôi là Vĩnh An 👋</span>
+                <h1>Theo đuổi đam mê qua từng <br><span class="highlight-gradient">Dòng Code & Bài Toán</span></h1>
+                <p>Là một học sinh cấp 3 với khát khao khám phá công nghệ, mình xem lập trình không chỉ là đam mê mà còn
+                    là hành trình để rèn luyện tư duy, giải quyết vấn đề và học hỏi những điều mới mẻ mỗi ngày!✨</p>
+                <div class="hero-btns">
+                    <a href="#about" class="btn btn-primary magnetic-btn">Khám phá Về Tôi</a>
+                    <a href="#services" class="btn btn-outline magnetic-btn">Xem Dịch Vụ</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="hero-image-wrapper">
+                    <!-- ẢNH ĐẠI DIỆN CHÍNH: Thay file ảnh vào thư mục images/main-avatar.jpg -->
+                    <img src="images/main-avatar.jpg" alt="Vĩnh An" class="hero-img-faded"
+                        onerror="this.src='https://images.unsplash.com/photo-1531297172867-111166433501?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60'">
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section id="services" class="services">
+            <div class="section-header">
+                <h2>Dịch Vụ Của Tôi</h2>
+                <p>Giải pháp toàn diện cho doanh nghiệp của bạn trên môi trường Digital</p>
+            </div>
+
+            <div class="services-grid">
+                <div class="service-card magnetic-block">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #FF6B6B, #FF8E53);">
+                        <i class="fa-solid fa-laptop-code"></i>
+                    </div>
+                    <h3>Web Development</h3>
+                    <p>Xây dựng website từ A-Z với công nghệ mới nhất (React, Vue, Node.js), đảm bảo tốc độ load trang
+                        cực nhanh và chuẩn SEO.</p>
+                </div>
+
+                <div class="service-card magnetic-block">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #4FACFE, #00F2FE);">
+                        <i class="fa-solid fa-pen-nib"></i>
+                    </div>
+                    <h3>UI/UX Design</h3>
+                    <p>Thiết kế giao diện người dùng mượt mà, bám sát hành trình khách hàng, mang lại trải nghiệm tối ưu
+                        và tăng tỷ lệ chuyển đổi.</p>
+                </div>
+
+                <div class="service-card magnetic-block">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #43E97B, #38F9D7);">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </div>
+                    <h3>E-Commerce</h3>
+                    <p>Hệ thống bán hàng trực tuyến thông minh, quản lý đơn hàng dễ dàng, tích hợp thanh toán tự động
+                        tiện lợi.</p>
+                </div>
+
+                <div class="service-card magnetic-block">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #FA709A, #FEE140);">
+                        <i class="fa-solid fa-rocket"></i>
+                    </div>
+                    <h3>Performance & SEO</h3>
+                    <p>Tối ưu hóa mã nguồn, nâng cấp hiệu suất và cấu trúc chuẩn SEO giúp website dễ dàng đạt top
+                        Google.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Story Scroll Animation Section -->
+        <section id="story-scroll" class="story-section">
+            <div class="sticky-container">
+                <!-- Layered SVG Mountains -->
+                <div class="mountains layer-1" id="anim-mountain-1">
+                    <svg width="100%" height="300" preserveAspectRatio="none" viewBox="0 0 1440 300"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0 200 L300 50 L600 250 L900 100 L1200 250 L1440 150 L1440 300 L0 300 Z"
+                            fill="#0f172a" />
+                    </svg>
+                </div>
+                <div class="mountains layer-2" id="anim-mountain-2">
+                    <svg width="100%" height="300" preserveAspectRatio="none" viewBox="0 0 1440 300"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0 250 L200 150 L500 280 L800 180 L1100 280 L1440 200 L1440 300 L0 300 Z"
+                            fill="#1e293b" />
+                    </svg>
+                </div>
+                <div class="mountains layer-3" id="anim-mountain-3">
+                    <svg width="100%" height="300" preserveAspectRatio="none" viewBox="0 0 1440 300"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0 300 L150 220 L400 300 L700 240 L1000 300 L1300 260 L1440 300 Z" fill="#334155" />
+                    </svg>
+                </div>
+
+                <!-- 3D Graphic Human Throwing -->
+                <div class="animal" id="anim-animal">
+                    <img src="images/3d-thrower.jpg" alt="3D Athlete Throwing" class="graphic-3d"
+                        style="width: 200px; filter: drop-shadow(0 0 15px rgba(0, 242, 254, 0.5)) brightness(1.2);">
+                </div>
+
+                <!-- 3D Graphic Spear -->
+                <div class="spear" id="anim-spear">
+                    <img src="images/3d-spear.jpg" alt="3D Spear" class="graphic-3d"
+                        style="width: 220px; filter: drop-shadow(0 0 20px rgba(0, 242, 254, 0.8)) brightness(1.5);">
+                </div>
+
+                <!-- Target -->
+                <div class="target" id="anim-target">
+                    <svg width="150" height="150" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="45" stroke="#ff0050" stroke-width="10" />
+                        <circle cx="50" cy="50" r="25" stroke="#fff" stroke-width="10" />
+                        <circle cx="50" cy="50" r="5" fill="#ff0050" />
+                    </svg>
+                </div>
+
+                <!-- Confetti Container -->
+                <div class="confetti-container" id="confetti-container"></div>
+
+                <div class="instruction">Cuộn chuột để xem điều bất ngờ ⬇️</div>
+            </div>
+        </section>
+
+        <!-- Avatar animated out of sticky -->
+        <div class="anim-avatar" id="anim-avatar">
+            <img src="images/cute-avatar.jpg" alt="Vĩnh An Avatar"
+                onerror="this.src='https://images.unsplash.com/photo-1573865526739-10659fec78a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'">
+        </div>
+
+        <!-- About Section (Về Tôi) -->
+        <section id="about" class="about-section">
+            <div class="section-header">
+                <h2 style="font-family: 'Playpen Sans', cursive;">Về Tôi <span class="cute-emoji">✨</span></h2>
+                <p>Một chút ngẫu hứng & nhí nhảnh của Gen Z</p>
+            </div>
+
+            <div class="bento-grid">
+                <!-- Bento Block: Profile -->
+                <div class="bento-item bento-profile glass-card magnetic-block">
+                    <div class="avatar-box">
+                        <!-- ẢNH AVATAR NHỎ (VỀ TÔI): Thay file ảnh vào thư mục images/cute-avatar.jpg -->
+                        <img src="images/cute-avatar.jpg" alt="Vĩnh An Avatar" class="bento-avatar"
+                            onerror="this.src='https://images.unsplash.com/photo-1573865526739-10659fec78a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'">
+                        <div class="status-bubble">
+                            <span class="dot"></span> Online lướt top top 🌙
+                        </div>
+                    </div>
+                    <div class="bio-info">
+                        <h3 class="genz-name">Vĩnh An (Dev Z) 🌟</h3>
+                        <p class="genz-desc">Student ban ngày, developer ban đêm. Học sinh CTU Elite High School K15.
+                            Đam mê code, giải toán, nghiên cứu khoa học và nghe nhạc Fonk 🎧</p>
+                        <div class="cookie-box">
+                            <span class="cookie-icon">🍪</span> Cảm ơn đã ghé thăm! Tặng bạn cookie nè ~
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bento Block: YouTube -->
+                <a href="https://www.youtube.com/@AnVinh-px9qs" target="_blank"
+                    class="bento-item bento-social youtube glass-card magnetic-block">
+                    <div class="icon-wrap"><i class="fa-brands fa-youtube"></i></div>
+                    <div class="social-text">
+                        <b>YouTube</b>
+                        <p>Video mới 🔴</p>
+                    </div>
+                </a>
+
+                <!-- Bento Block: Facebook -->
+                <a href="https://www.facebook.com/share/19dCGwr4GE/" target="_blank"
+                    class="bento-item bento-social facebook glass-card magnetic-block">
+                    <div class="icon-wrap"><i class="fa-brands fa-facebook-f"></i></div>
+                    <div class="social-text">
+                        <b>Facebook</b>
+                        <p>Mong muốn được học hỏi 📘</p>
+                    </div>
+                </a>
+
+                <!-- Bento Block: Zalo -->
+                <a href="https://zalo.me/" target="_blank"
+                    class="bento-item bento-social zalo glass-card magnetic-block">
+                    <div class="icon-wrap"><b style="font-family: Arial, sans-serif; font-size: 1.5rem;">Z</b></div>
+                    <div class="social-text">
+                        <b>Zalo</b>
+                        <p>Kím tui chii 😶‍🌫️</p>
+                    </div>
+                </a>
+
+                <!-- Bento Block: Telegram -->
+                <a href="https://t.me/Zinh_antt" target="_blank"
+                    class="bento-item bento-social telegram glass-card magnetic-block">
+                    <div class="icon-wrap"><i class="fa-brands fa-telegram"></i></div>
+                    <div class="social-text">
+                        <b>Telegram</b>
+                        <p>Thường trên airplane ✈️</p>
+                    </div>
+                </a>
+
+                <!-- Bento Block: Instagram -->
+                <a href="https://www.instagram.com/zinh_ann/" target="_blank"
+                    class="bento-item bento-social instagram glass-card magnetic-block">
+                    <div class="icon-wrap"><i class="fa-brands fa-instagram"></i></div>
+                    <div class="social-text">
+                        <b>Instagram</b>
+                        <p>Nghề tay trái-nhíp ảnh gia 📸</p>
+                    </div>
+                </a>
+
+                <!-- Bento Block: Github -->
+                <a href="https://github.com/Ant-coder-AI" target="_blank"
+                    class="bento-item bento-social github glass-card magnetic-block">
+                    <div class="icon-wrap"><i class="fa-brands fa-github"></i></div>
+                    <div class="social-text">
+                        <b>Github</b>
+                        <p>Nơi giấu bug 🐛</p>
+                    </div>
+                </a>
+
+                <!-- Bento Block: Setup Image -->
+                <div class="bento-item bento-image glass-card magnetic-block">
+                    <!-- ẢNH GÓC LÀM VIỆC: Thay file ảnh vào thư mục images/setup-image.jpg -->
+                    <img src="images/setup-image.jpg" alt="Góc làm việc" class="setup-img"
+                        onerror="this.src='https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'">
+                    <div class="image-caption">Achievement mình đã đạt được 🥉</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Vĩnh An. Crafted with passion, code & milk tea 🧋.</p>
+        <div class="social-links">
+            <a href="#" class="magnetic-btn"><i class="fa-brands fa-github"></i></a>
+            <a href="#" class="magnetic-btn"><i class="fa-brands fa-linkedin"></i></a>
+            <a href="#" class="magnetic-btn"><i class="fa-brands fa-twitter"></i></a>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>

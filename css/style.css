@@ -1,0 +1,2346 @@
+:root {
+    --bg-dark: #030712;
+    --ocean-deep: #071126;
+    --ocean-mid: #0b1f3d;
+    --ocean-surface: #0284c7;
+    --ocean-cyan: #00f2fe;
+    --ocean-teal: #38bdf8;
+    --biolum-purple: #a855f7;
+    --biolum-green: #34d399;
+    --biolum-gold: #fde047;
+    
+    --bg-card: rgba(11, 27, 54, 0.45);
+    --bg-card-hover: rgba(16, 38, 77, 0.65);
+    --border-color: rgba(56, 189, 248, 0.2);
+    --border-glow: rgba(0, 242, 254, 0.4);
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    
+    --accent-gradient: linear-gradient(135deg, #00f2fe 0%, #38bdf8 50%, #818cf8 100%);
+    --gold-gradient: linear-gradient(135deg, #fde047 0%, #f59e0b 100%);
+    
+    --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    background-color: var(--bg-dark);
+}
+
+body {
+    background-color: transparent;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* ===================================================
+   CANVAS NỀN ĐẠI DƯƠNG 60FPS
+   =================================================== */
+#ocean-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* ===================================================
+   MODAL HỎI ÂM THANH MÔ PHỎNG KHI VỪA VÀO TRANG
+   =================================================== */
+.audio-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at center, rgba(3, 15, 38, 0.94) 0%, rgba(1, 4, 10, 0.98) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.audio-modal-overlay.fade-out {
+    opacity: 0;
+    transform: scale(1.08);
+    pointer-events: none;
+}
+
+.audio-modal-card {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(0, 242, 254, 0.35);
+    box-shadow: 0 0 50px rgba(0, 242, 254, 0.2), inset 0 0 30px rgba(0, 242, 254, 0.05);
+    border-radius: 28px;
+    padding: 3rem 2.5rem;
+    max-width: 520px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    animation: modalPopIn 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalPopIn {
+    0% { transform: scale(0.85) translateY(30px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.modal-icon-wrap {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    background: radial-gradient(circle, rgba(0, 242, 254, 0.2) 0%, transparent 70%);
+    border: 1px solid var(--ocean-cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    color: var(--ocean-cyan);
+    position: relative;
+}
+
+.sonar-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 1.5px solid var(--ocean-cyan);
+    animation: sonarPing 2.2s infinite ease-out;
+}
+
+.sonar-ring:nth-child(2) {
+    animation-delay: 0.7s;
+}
+
+@keyframes sonarPing {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(2.2); opacity: 0; }
+}
+
+.audio-modal-card h2 {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    margin-bottom: 0.8rem;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.audio-modal-card p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 2.2rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ===================================================
+   FLOATING HUD (ĐỘ SÂU & ÂM THANH)
+   =================================================== */
+.ocean-hud {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+    pointer-events: auto;
+}
+
+.hud-depth-card {
+    background: rgba(8, 20, 44, 0.75);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 0.8rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.depth-bar-track {
+    width: 6px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.depth-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0%;
+    background: var(--accent-gradient);
+    transition: height 0.2s ease-out;
+}
+
+.depth-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.depth-value {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--ocean-cyan);
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+}
+
+.depth-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.hud-sound-btn {
+    background: rgba(8, 20, 44, 0.75);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 30px;
+    padding: 0.6rem 1.2rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.hud-sound-btn:hover {
+    border-color: var(--ocean-cyan);
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Equalizer Bars */
+.sound-eq {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 16px;
+}
+
+.sound-eq .bar {
+    width: 3px;
+    background: var(--ocean-cyan);
+    border-radius: 2px;
+    height: 4px;
+    transition: height 0.2s ease;
+}
+
+.sound-eq.playing .bar:nth-child(1) { animation: eqBounce 0.8s infinite ease-in-out alternate; }
+.sound-eq.playing .bar:nth-child(2) { animation: eqBounce 0.6s infinite ease-in-out alternate 0.2s; }
+.sound-eq.playing .bar:nth-child(3) { animation: eqBounce 0.9s infinite ease-in-out alternate 0.4s; }
+.sound-eq.playing .bar:nth-child(4) { animation: eqBounce 0.7s infinite ease-in-out alternate 0.1s; }
+
+@keyframes eqBounce {
+    0% { height: 3px; }
+    100% { height: 16px; }
+}
+
+.sound-eq.muted .bar {
+    height: 2px;
+    background: var(--text-muted);
+}
+
+/* ===================================================
+   NAVBAR
+   =================================================== */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 6%;
+    background: rgba(3, 7, 18, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 900;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+    transition: all 0.3s ease;
+}
+
+.logo {
+    font-size: 1.7rem;
+    font-weight: 800;
+    font-family: var(--font-heading);
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    text-decoration: none;
+}
+
+.logo-badge {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    background: rgba(0, 242, 254, 0.15);
+    border: 1px solid var(--ocean-cyan);
+    border-radius: 12px;
+    color: var(--ocean-cyan);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+    align-items: center;
+}
+
+.nav-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    position: relative;
+    padding: 4px 0;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background: var(--accent-gradient);
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: var(--ocean-cyan);
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+.nav-cta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* ===================================================
+   BUTTONS
+   =================================================== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 2rem;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    border: none;
+    outline: none;
+}
+
+.btn-ocean {
+    background: var(--accent-gradient);
+    color: #030712;
+    box-shadow: 0 4px 20px rgba(0, 242, 254, 0.35);
+}
+
+.btn-ocean:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 242, 254, 0.6);
+}
+
+.btn-outline-ocean {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(8px);
+}
+
+.btn-outline-ocean:hover {
+    border-color: var(--ocean-cyan);
+    color: var(--ocean-cyan);
+    background: rgba(0, 242, 254, 0.1);
+    transform: translateY(-2px);
+}
+
+/* ===================================================
+   HERO SECTION (MẶT BIỂN & BẦU TRỜI)
+   =================================================== */
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7rem 6% 4rem;
+    position: relative;
+    z-index: 10;
+}
+
+.hero-content {
+    flex: 1.2;
+    max-width: 680px;
+    transition: all 0.5s ease;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(3, 14, 30, 0.78);
+    border: 1px solid rgba(0, 242, 254, 0.6);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(0, 242, 254, 0.25);
+    padding: 7px 18px;
+    border-radius: 30px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #38bdf8;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: all 0.3s ease;
+}
+
+.pulse-dot-cyan {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ocean-cyan);
+    box-shadow: 0 0 10px var(--ocean-cyan);
+    animation: livePulse 2s infinite ease-in-out;
+}
+
+.hero h1 {
+    font-family: var(--font-heading);
+    font-size: clamp(2.6rem, 5.2vw, 4.2rem);
+    line-height: 1.2;
+    font-weight: 800;
+    margin-bottom: 1.6rem;
+    letter-spacing: -0.02em;
+}
+
+.hero-title-main {
+    color: #ffffff;
+    text-shadow: 0 3px 6px rgba(2, 6, 23, 0.95), 0 6px 20px rgba(2, 6, 23, 0.9), 0 0 40px rgba(0, 242, 254, 0.35);
+    transition: all 0.6s ease;
+    display: inline-block;
+}
+
+.highlight-gradient {
+    background: linear-gradient(135deg, #00f2fe 0%, #38bdf8 30%, #ec4899 75%, #fde047 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 10px rgba(0, 242, 254, 0.65)) drop-shadow(0 4px 20px rgba(2, 6, 23, 0.85));
+    transition: filter 0.6s ease;
+}
+
+/* Các biến thể màu sắc thích ứng khi bầu trời thay đổi */
+.hero-content.sky-day .hero-title-main {
+    color: #ffffff;
+    text-shadow: 0 3px 6px rgba(2, 6, 23, 0.95), 0 8px 24px rgba(2, 6, 23, 0.85), 0 0 35px rgba(2, 6, 23, 0.75);
+}
+
+.hero-content.sky-sunset .hero-title-main {
+    background: linear-gradient(135deg, #ffffff 25%, #fef08a 65%, #fb923c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 3px 8px rgba(35, 10, 4, 0.95)) drop-shadow(0 0 30px rgba(249, 115, 22, 0.6));
+}
+
+.hero-content.sky-night .hero-title-main {
+    color: #ffffff;
+    text-shadow: 0 0 25px rgba(0, 242, 254, 0.9), 0 0 50px rgba(56, 189, 248, 0.55), 0 3px 12px rgba(0, 0, 0, 0.95);
+}
+
+.hero-content.sky-rain .hero-title-main {
+    color: #f0fdf4;
+    text-shadow: 0 0 25px rgba(56, 189, 248, 0.8), 0 4px 15px rgba(15, 23, 42, 0.95);
+}
+
+.hero-desc {
+    color: #cbd5e1;
+    font-size: 1.15rem;
+    line-height: 1.75;
+    margin-bottom: 2.5rem;
+    text-shadow: 0 2px 12px rgba(2, 6, 23, 0.95), 0 0 25px rgba(0, 0, 0, 0.8);
+}
+
+.hero-btns {
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+}
+
+.hero-visual {
+    flex: 0.9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero-avatar-frame {
+    position: relative;
+    width: 380px;
+    height: 480px;
+    border-radius: 30px;
+    overflow: hidden;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 242, 254, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.hero-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-avatar-frame:hover .hero-avatar-img {
+    transform: scale(1.05);
+}
+
+.avatar-depth-badge {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: rgba(3, 7, 18, 0.85);
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    padding: 12px 16px;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.avatar-badge-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #fff;
+}
+
+.avatar-badge-sub {
+    font-size: 0.75rem;
+    color: var(--ocean-cyan);
+}
+
+.scroll-hint-surface {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    animation: floatUpDown 2.5s infinite ease-in-out;
+}
+
+@keyframes floatUpDown {
+    0%, 100% { transform: translate(-50%, 0); }
+    50% { transform: translate(-50%, 10px); }
+}
+
+/* ===================================================
+   SERVICES SECTION (VÙNG HOÀNG HÔN 150M)
+   =================================================== */
+.services-section {
+    padding: 8rem 6%;
+    position: relative;
+    z-index: 10;
+}
+
+.section-header {
+    text-align: center;
+    max-width: 650px;
+    margin: 0 auto 5rem;
+}
+
+.depth-tag {
+    display: inline-block;
+    color: var(--ocean-cyan);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+}
+
+.section-header h2 {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 3.5vw, 3rem);
+    margin-bottom: 1rem;
+    letter-spacing: -0.5px;
+}
+
+.section-header p {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.service-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 2.5rem 2rem;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.service-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--ocean-cyan);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 45px rgba(0, 242, 254, 0.15);
+}
+
+.service-icon-box {
+    width: 65px;
+    height: 65px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin-bottom: 1.8rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    transition: transform 0.4s ease;
+}
+
+.service-card:hover .service-icon-box {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.service-card h3 {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+.service-card p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.service-card-action {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ocean-cyan);
+    opacity: 0.85;
+    transition: all 0.3s ease;
+}
+
+.service-card:hover .service-card-action {
+    opacity: 1;
+    transform: translateX(4px);
+}
+
+/* Thẻ Dịch Vụ Shop (Đã có giao diện hoạt động) */
+.service-shop-active {
+    border-color: rgba(16, 185, 129, 0.45);
+    background: linear-gradient(135deg, rgba(6, 78, 59, 0.25), rgba(11, 27, 54, 0.9));
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+.service-shop-active:hover {
+    border-color: #10b981;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5), 0 0 35px rgba(16, 185, 129, 0.35);
+    transform: translateY(-8px) scale(1.02);
+}
+
+.service-live-badge {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid #10b981;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #6ee7b7;
+}
+
+.live-pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    animation: livePulse 1.6s infinite ease-in-out;
+}
+
+.service-shop-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #10b981, #06b6d4);
+    color: #030712;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    transition: all 0.3s ease;
+}
+
+.service-shop-active:hover .service-shop-btn {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+}
+
+/* ===================================================
+   SERVICE TOAST NOTIFICATION (THÔNG BÁO DỊCH VỤ)
+   =================================================== */
+.service-toast {
+    position: fixed;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(-120px);
+    z-index: 99999;
+    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+    opacity: 0;
+    width: 90%;
+    max-width: 480px;
+}
+
+.service-toast.active {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.toast-card {
+    background: rgba(8, 20, 44, 0.94);
+    border: 1px solid rgba(0, 242, 254, 0.5);
+    border-radius: 20px;
+    padding: 1rem 1.4rem;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 242, 254, 0.25);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.toast-icon-wrap {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(253, 224, 71, 0.15);
+    border: 1px solid rgba(253, 224, 71, 0.4);
+    color: #fde047;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    animation: toastSpin 3s infinite ease-in-out;
+}
+
+@keyframes toastSpin {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(180deg); }
+}
+
+.toast-content {
+    flex: 1;
+}
+
+.toast-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--ocean-cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.toast-message {
+    color: #f8fafc;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.toast-close {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+    transition: color 0.2s ease;
+}
+
+.toast-close:hover {
+    color: #fff;
+}
+
+/* ===================================================
+   CHASE SECTION (CÁ MẬP ĐUỔI ĐÀN CÁ NHỎ - 300M)
+   =================================================== */
+.chase-section {
+    height: 280vh; /* Độ dài cuộn tương tác */
+    position: relative;
+    z-index: 15;
+}
+
+.chase-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chase-hud-header {
+    position: absolute;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 30;
+    pointer-events: none;
+    transition: all 0.4s ease;
+}
+
+.chase-warning-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 30px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #f87171;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+.chase-hint {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+/* Bọt nước rẽ sóng khi cá mập bơi */
+.chase-bubbles-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.chase-bubble {
+    position: absolute;
+    background: rgba(0, 242, 254, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: bubblePop 1.5s infinite ease-out;
+}
+
+@keyframes bubblePop {
+    0% { transform: scale(0.4) translateY(0); opacity: 0.8; }
+    100% { transform: scale(1.6) translateY(-40px); opacity: 0; }
+}
+
+/* ===================================================
+   ĐÀN CÁ NHỎ SIÊU THỰC & BƠI TỰ NHIÊN
+   (Không có khung lấp lánh hình chữ nhật, chỉ có đàn cá bơi tự nhiên)
+   =================================================== */
+.fish-school-realistic {
+    position: absolute;
+    left: 0;
+    top: 45%;
+    width: 520px;
+    max-width: 50vw;
+    z-index: 20;
+    will-change: transform;
+    pointer-events: none;
+}
+
+.chase-img-fish {
+    width: 100%;
+    height: auto;
+    display: block;
+    transform-origin: 65% 50%;
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5));
+    animation: fishSchoolNaturalSwarm var(--school-rate, 0.9s) infinite ease-in-out alternate;
+}
+
+@keyframes fishSchoolNaturalSwarm {
+    0% {
+        transform: rotate(-2deg) skewY(-2.2deg) scale(0.97, 0.95);
+    }
+    50% {
+        transform: rotate(0.8deg) skewY(1deg) scale(1.02, 1.03);
+    }
+    100% {
+        transform: rotate(2.8deg) skewY(2.4deg) scale(0.98, 0.96);
+    }
+}
+
+/* ===================================================
+   CÁ MẬP SĂN MỒI THÂN LIỀN KHỐI UỐN LƯỢN VẨY ĐUÔI
+   (Thân cá mập là một thể thống nhất hoàn chỉnh, tuyệt đối không bị đứt khúc)
+   =================================================== */
+.predator-shark-realistic {
+    position: absolute;
+    left: 0;
+    top: 42%;
+    width: 660px;
+    max-width: 58vw;
+    z-index: 22;
+    will-change: transform;
+    pointer-events: none;
+    filter: drop-shadow(0 18px 45px rgba(0, 0, 0, 0.85));
+}
+
+.chase-img-shark {
+    width: 100%;
+    height: auto;
+    display: block;
+    /* Tâm xoay đặt ở phần đầu và ức vây ngực (khoảng 78% chiều ngang vì đầu cá hướng sang phải) */
+    transform-origin: 78% 50%;
+    animation: sharkUnifiedSwim var(--swim-rate, 1.35s) infinite ease-in-out alternate;
+}
+
+@keyframes sharkUnifiedSwim {
+    0% {
+        /* Đuôi quẫy sang trái: thân uốn tự nhiên, vây đuôi mở rộng */
+        transform: rotate(-3.8deg) skewY(-3.2deg) scaleX(0.975) scaleY(1.025);
+    }
+    50% {
+        /* Trạng thái lướt thẳng ở giữa chu kỳ */
+        transform: rotate(0.4deg) skewY(0.6deg) scaleX(1.01) scaleY(0.985);
+    }
+    100% {
+        /* Đuôi quẫy sang phải: quạt nước mạnh mẽ */
+        transform: rotate(4.2deg) skewY(3.6deg) scaleX(0.97) scaleY(1.03);
+    }
+}
+
+/* ===================================================
+   VỀ TÔI SECTION (BENTO GRID - 800M)
+   =================================================== */
+.about-section {
+    padding: 8rem 6% 6rem;
+    position: relative;
+    z-index: 20;
+}
+
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: minmax(180px, auto);
+    gap: 1.5rem;
+    max-width: 1150px;
+    margin: 0 auto;
+}
+
+.bento-item {
+    border-radius: 26px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    color: var(--text-primary);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.bento-item:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--ocean-cyan);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 242, 254, 0.12);
+}
+
+/* Bento: Profile chính */
+.bento-profile {
+    grid-column: span 2;
+    grid-row: span 2;
+    padding: 2.5rem 2.8rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Các chi tiết trang trí hải dương học (Rong biển, đá ngầm, sao biển, san hô, bọt khí) */
+.bento-ocean-decor {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.decor-seaweed {
+    position: absolute;
+    bottom: -5px;
+    right: 12px;
+    width: 105px;
+    height: 160px;
+    opacity: 0.42;
+    filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.45));
+    transition: opacity 0.4s ease;
+}
+
+.bento-profile:hover .decor-seaweed {
+    opacity: 0.65;
+}
+
+.weed-stem {
+    transform-origin: bottom center;
+}
+
+.weed-1 {
+    animation: seaweedSway1 6s infinite ease-in-out;
+}
+
+.weed-2 {
+    animation: seaweedSway2 5s infinite ease-in-out;
+}
+
+.weed-3 {
+    animation: seaweedSway1 7s infinite ease-in-out;
+}
+
+@keyframes seaweedSway1 {
+    0%, 100% { transform: rotate(0deg) skewX(0deg); }
+    50% { transform: rotate(4deg) skewX(6deg); }
+}
+
+@keyframes seaweedSway2 {
+    0%, 100% { transform: rotate(0deg) skewX(0deg); }
+    50% { transform: rotate(-5deg) skewX(-7deg); }
+}
+
+.decor-rock {
+    position: absolute;
+    bottom: -2px;
+    right: -5px;
+    width: 160px;
+    height: 70px;
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.decor-starfish {
+    position: absolute;
+    bottom: 22px;
+    right: 85px;
+    width: 38px;
+    height: 38px;
+    animation: starfishPulse 3s infinite ease-in-out;
+    filter: drop-shadow(0 0 12px rgba(244, 63, 94, 0.65));
+    transition: transform 0.3s ease;
+    cursor: default;
+}
+
+.bento-profile:hover .decor-starfish {
+    transform: scale(1.15) rotate(15deg);
+}
+
+.starfish-icon {
+    width: 100%;
+    height: 100%;
+}
+
+@keyframes starfishPulse {
+    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.85; }
+    50% { transform: scale(1.08) rotate(4deg); opacity: 1; filter: drop-shadow(0 0 18px rgba(244, 63, 94, 0.9)); }
+}
+
+.decor-coral {
+    position: absolute;
+    bottom: 8px;
+    left: 20px;
+    font-size: 1.6rem;
+    opacity: 0.45;
+    filter: drop-shadow(0 0 8px rgba(244, 63, 94, 0.5));
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.decor-shell {
+    position: absolute;
+    bottom: 12px;
+    left: 55px;
+    font-size: 1.35rem;
+    opacity: 0.45;
+    transform: rotate(-15deg);
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.bento-profile:hover .decor-coral,
+.bento-profile:hover .decor-shell {
+    opacity: 0.75;
+    transform: translateY(-3px);
+}
+
+.decor-bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(0, 242, 254, 0.35) 60%, transparent 90%);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 8px rgba(0, 242, 254, 0.3);
+    animation: decorBubbleRise infinite ease-in;
+}
+
+.decor-bubble.b1 { width: 10px; height: 10px; bottom: 15px; right: 120px; animation-duration: 4.5s; }
+.decor-bubble.b2 { width: 6px; height: 6px; bottom: 25px; right: 145px; animation-duration: 3.8s; animation-delay: 1.5s; }
+.decor-bubble.b3 { width: 8px; height: 8px; bottom: 8px; left: 88px; animation-duration: 5.2s; animation-delay: 2.2s; }
+
+@keyframes decorBubbleRise {
+    0% { transform: translateY(0) scale(0.6); opacity: 0; }
+    30% { opacity: 0.8; }
+    80% { opacity: 0.6; }
+    100% { transform: translateY(-75px) scale(1.15); opacity: 0; }
+}
+
+.bento-profile-top {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    margin-bottom: 1.35rem;
+    position: relative;
+    z-index: 2;
+}
+
+.bento-avatar-wrap {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    flex-shrink: 0;
+}
+
+.bento-avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--ocean-cyan);
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.4);
+}
+
+.bento-status-pill {
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #064e3b;
+    border: 1px solid #10b981;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    color: #6ee7b7;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+}
+
+.pulse-dot {
+    width: 6px;
+    height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #10b981;
+}
+
+.bento-name-box h3 {
+    font-family: var(--font-heading);
+    font-size: 1.9rem;
+    font-weight: 800;
+    margin-bottom: 0.3rem;
+    color: #fff;
+}
+
+.bento-title-badge {
+    color: var(--ocean-cyan);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* 2 dòng đầu chữ to, nhiều màu rực rỡ bắt mắt */
+.bento-bio-headline {
+    margin-bottom: 1.35rem;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.bio-title-gradient-1 {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    font-weight: 800;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    background: linear-gradient(90deg, #38bdf8 0%, #00f2fe 30%, #a855f7 70%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 10px rgba(0, 242, 254, 0.35));
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bio-title-gradient-2 {
+    font-family: var(--font-heading);
+    font-size: 1.16rem;
+    font-weight: 700;
+    line-height: 1.4;
+    background: linear-gradient(90deg, #fde047 0%, #fb923c 35%, #f43f5e 70%, #d946ef 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 10px rgba(251, 146, 60, 0.3));
+}
+
+/* Nội dung giới thiệu: Chữ to hơn, căn đều 2 lề, icon emoji sinh động */
+.bento-bio-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.05rem;
+    margin-bottom: 1.8rem;
+    position: relative;
+    z-index: 2;
+}
+
+.bio-para {
+    color: #e2e8f0;
+    font-size: 1.06rem;
+    line-height: 1.82;
+    text-align: justify;
+    text-justify: inter-word;
+    letter-spacing: 0.01em;
+    margin: 0;
+}
+
+.bio-para b {
+    color: #ffffff;
+    font-weight: 600;
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
+}
+
+.bento-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    position: relative;
+    z-index: 2;
+}
+
+.tech-badge {
+    background: rgba(0, 242, 254, 0.08);
+    border: 1px solid rgba(0, 242, 254, 0.25);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--ocean-cyan);
+    font-weight: 500;
+}
+
+/* Bento: Ảnh thành tích thực tế */
+.bento-achievement {
+    grid-column: span 2;
+    grid-row: span 1;
+    padding: 0;
+    display: flex;
+    position: relative;
+}
+
+.achievement-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 25%;
+    transition: transform 0.5s ease;
+}
+
+.bento-achievement:hover .achievement-img {
+    transform: scale(1.05);
+}
+
+.achievement-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 1.2rem;
+    background: linear-gradient(transparent, rgba(3, 7, 18, 0.95));
+}
+
+.achievement-overlay h4 {
+    color: #fff;
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+}
+
+.achievement-overlay p {
+    color: var(--ocean-cyan);
+    font-size: 0.8rem;
+}
+
+/* Bento: Mạng xã hội & Kênh liên hệ */
+.bento-social {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 0.8rem;
+}
+
+.social-icon-circle {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    transition: all 0.3s ease;
+}
+
+.bento-social:hover .social-icon-circle {
+    transform: scale(1.12);
+}
+
+.youtube:hover .social-icon-circle { color: #ff0000; background: rgba(255, 0, 0, 0.15); box-shadow: 0 0 20px rgba(255, 0, 0, 0.3); }
+.facebook:hover .social-icon-circle { color: #1877f2; background: rgba(24, 119, 242, 0.15); box-shadow: 0 0 20px rgba(24, 119, 242, 0.3); }
+.zalo:hover .social-icon-circle { color: #0084ff; background: rgba(0, 132, 255, 0.15); box-shadow: 0 0 20px rgba(0, 132, 255, 0.3); }
+.telegram:hover .social-icon-circle { color: #229ed9; background: rgba(34, 158, 217, 0.15); box-shadow: 0 0 20px rgba(34, 158, 217, 0.3); }
+.instagram:hover .social-icon-circle { color: #e1306c; background: rgba(225, 48, 108, 0.15); box-shadow: 0 0 20px rgba(225, 48, 108, 0.3); }
+.github:hover .social-icon-circle { color: #fff; background: rgba(255, 255, 255, 0.15); box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
+
+.bento-social b {
+    font-size: 0.95rem;
+    color: #fff;
+}
+
+.bento-social span {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* Bento: Setup Workstation */
+.bento-setup {
+    grid-column: span 2;
+    grid-row: span 1;
+    padding: 0;
+}
+
+.setup-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.bento-setup:hover .setup-img {
+    transform: scale(1.05);
+}
+
+.setup-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(transparent, rgba(3, 7, 18, 0.9));
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* ===================================================
+   OCEAN FLOOR (ĐÁY BIỂN & TÀU ĐẮM - 3800M)
+   =================================================== */
+.ocean-floor-section {
+    padding: 10rem 6% 6rem;
+    position: relative;
+    z-index: 25;
+}
+
+.floor-cta-card {
+    max-width: 900px;
+    margin: 0 auto;
+    background: rgba(4, 13, 26, 0.8);
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    border-radius: 32px;
+    padding: 4rem 3rem;
+    text-align: center;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 50px rgba(0, 242, 254, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.floor-cta-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--accent-gradient);
+}
+
+.floor-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    background: rgba(253, 224, 71, 0.12);
+    border: 1px solid rgba(253, 224, 71, 0.3);
+    color: #fde047;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+}
+
+.floor-cta-card h2 {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 3.5vw, 2.8rem);
+    margin-bottom: 1.2rem;
+    color: #fff;
+}
+
+.floor-cta-card p {
+    color: #cbd5e1;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    max-width: 650px;
+    margin: 0 auto 2.5rem;
+}
+
+.floor-actions {
+    display: flex;
+    gap: 1.2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ===================================================
+   FOOTER
+   =================================================== */
+footer {
+    border-top: 1px solid rgba(56, 189, 248, 0.15);
+    padding: 2.5rem 6%;
+    background: rgba(2, 6, 23, 0.85);
+    backdrop-filter: blur(12px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 30;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.footer-coords {
+    color: var(--ocean-cyan);
+    font-family: monospace;
+    font-size: 0.85rem;
+}
+
+.footer-socials {
+    display: flex;
+    gap: 1.2rem;
+}
+
+.footer-socials a {
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+
+.footer-socials a:hover {
+    color: var(--ocean-cyan);
+}
+
+/* ===================================================
+   ANIMATION REVEAL UTILITIES
+   =================================================== */
+.fade-in-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fade-in-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ===================================================
+   RESPONSIVE DESIGN
+   =================================================== */
+@media (max-width: 1024px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+        padding-top: 8rem;
+    }
+    .hero-content {
+        margin-bottom: 3.5rem;
+    }
+    .hero-btns {
+        justify-content: center;
+    }
+    .hero-avatar-frame {
+        width: 320px;
+        height: 420px;
+    }
+    .bento-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .bento-profile {
+        grid-column: span 2;
+    }
+    .bento-achievement {
+        grid-column: span 2;
+        height: 240px;
+    }
+    .bento-setup {
+        grid-column: span 2;
+        height: 240px;
+    }
+    .bento-gmail {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+    }
+    .hero h1 {
+        font-size: 2.3rem;
+    }
+    .weather-widget {
+        top: 4.8rem;
+        right: 1rem;
+        left: 1rem;
+        width: auto;
+    }
+    .weather-card {
+        width: 100%;
+    }
+    .bento-grid {
+        grid-template-columns: 1fr;
+    }
+    .bento-profile, .bento-achievement, .bento-setup, .bento-gmail {
+        grid-column: span 1;
+    }
+    .ocean-hud {
+        bottom: 1rem;
+        right: 1rem;
+    }
+    footer {
+        flex-direction: column;
+        gap: 1.2rem;
+        text-align: center;
+    }
+    .footer-left {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* ===================================================
+   WEATHER WIDGET (THỜI TIẾT & AQI CẦN THƠ)
+   =================================================== */
+.weather-widget {
+    position: fixed;
+    top: 5.5rem;
+    right: 2rem;
+    z-index: 950;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: auto;
+}
+
+.weather-widget.hidden-depth {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    pointer-events: none;
+    visibility: hidden;
+}
+
+/* ===================================================
+   TRẠNG THÁI THU GỌN (COMPACT PILL)
+   =================================================== */
+.weather-compact-pill {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 15px 7px 11px;
+    background: rgba(11, 27, 54, 0.88);
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    border-radius: 40px;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 242, 254, 0.25);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+    user-select: none;
+    animation: weatherPillPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.weather-compact-pill:hover {
+    background: rgba(14, 38, 77, 0.95);
+    border-color: var(--ocean-cyan);
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 242, 254, 0.45);
+}
+
+.weather-compact-pill:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.weather-compact-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.weather-compact-icon .weather-art {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.65);
+    transform-origin: center center;
+}
+
+.weather-compact-temp {
+    font-family: var(--font-heading);
+    font-size: 1.08rem;
+    font-weight: 800;
+    color: #f8fafc;
+    letter-spacing: 0.2px;
+}
+
+.weather-expand-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ocean-cyan);
+    font-size: 0.72rem;
+    margin-left: 2px;
+    transition: transform 0.3s ease;
+}
+
+.weather-compact-pill:hover .weather-expand-arrow {
+    transform: translateY(2px);
+}
+
+/* ===================================================
+   TRẠNG THÁI HIỂN THỊ ĐÓNG/MỞ
+   =================================================== */
+.weather-widget.is-collapsed .weather-compact-pill {
+    display: flex;
+}
+
+.weather-widget.is-collapsed .weather-card {
+    display: none;
+}
+
+.weather-widget:not(.is-collapsed) .weather-compact-pill {
+    display: none;
+}
+
+.weather-widget:not(.is-collapsed) .weather-card {
+    display: block;
+    animation: weatherCardPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes weatherPillPop {
+    0% { opacity: 0; transform: scale(0.85); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes weatherCardPop {
+    0% { opacity: 0; transform: scale(0.92) translateY(-8px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Nút thu gọn trên góc Card chi tiết */
+.weather-collapse-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin-left: 8px;
+    outline: none;
+}
+
+.weather-collapse-btn:hover {
+    background: rgba(0, 242, 254, 0.25);
+    border-color: var(--ocean-cyan);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+}
+
+.weather-card {
+    background: rgba(11, 27, 54, 0.88);
+    border: 1px solid rgba(56, 189, 248, 0.38);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-radius: 22px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.55), 0 0 25px rgba(0, 242, 254, 0.15);
+    width: 340px;
+    transition: all 0.35s ease;
+}
+
+.weather-card:hover {
+    border-color: var(--ocean-cyan);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.65), 0 0 35px rgba(0, 242, 254, 0.25);
+}
+
+.weather-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.65rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.weather-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    animation: livePulse 1.8s infinite ease-in-out;
+}
+
+@keyframes livePulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.6; }
+}
+
+.weather-clock-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(3, 12, 28, 0.65);
+    border: 1px solid rgba(56, 189, 248, 0.28);
+    padding: 3px 9px;
+    border-radius: 12px;
+    font-size: 0.74rem;
+    font-family: monospace;
+    color: #e0f2fe;
+}
+
+.sky-phase-tag {
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #fde047;
+    background: rgba(253, 224, 71, 0.15);
+    padding: 1px 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(253, 224, 71, 0.3);
+}
+
+.weather-mode-switch {
+    display: flex;
+    background: rgba(3, 7, 18, 0.65);
+    padding: 3px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 2px;
+    margin-bottom: 0.8rem;
+    justify-content: space-between;
+}
+
+.weather-mode-pill {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.25s ease;
+    flex: 1;
+    justify-content: center;
+}
+
+.weather-mode-pill:hover {
+    color: #fff;
+}
+
+.weather-mode-pill.active {
+    background: linear-gradient(135deg, rgba(0, 242, 254, 0.35), rgba(14, 165, 233, 0.5));
+    color: #fff;
+    border: 1px solid var(--ocean-cyan);
+    box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+}
+
+.weather-card-body {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.weather-icon-visual {
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Biểu tượng thời tiết động (Weather Art) */
+.weather-art {
+    position: relative;
+    width: 48px;
+    height: 48px;
+}
+
+/* Sunny */
+.sunny-art .sun-core {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fde047 30%, #f59e0b 100%);
+    box-shadow: 0 0 18px #f59e0b, 0 0 32px rgba(253, 224, 71, 0.6);
+    animation: sunGlowPulse 2.5s infinite ease-in-out;
+}
+
+@keyframes sunGlowPulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+/* Rainy */
+.rainy-art .rain-cloud,
+.thunder-art .thunder-cloud {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 34px;
+    height: 18px;
+    background: #64748b;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(100, 116, 139, 0.5);
+}
+
+.rainy-art .rain-cloud::after,
+.thunder-art .thunder-cloud::after {
+    content: '';
+    position: absolute;
+    top: -9px;
+    left: 7px;
+    width: 18px;
+    height: 18px;
+    background: #94a3b8;
+    border-radius: 50%;
+}
+
+.rain-drops {
+    position: absolute;
+    bottom: 2px;
+    left: 10px;
+    display: flex;
+    gap: 6px;
+}
+
+.rain-drops span {
+    width: 2.2px;
+    height: 8px;
+    background: #38bdf8;
+    border-radius: 2px;
+    animation: rainDropAnim 0.75s infinite linear;
+}
+
+.rain-drops span:nth-child(2) { animation-delay: 0.25s; }
+.rain-drops span:nth-child(3) { animation-delay: 0.5s; }
+
+@keyframes rainDropAnim {
+    0% { transform: translateY(-4px); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateY(10px); opacity: 0; }
+}
+
+.thunder-art .bolt-flash {
+    position: absolute;
+    bottom: 4px;
+    left: 20px;
+    color: #fde047;
+    font-size: 0.9rem;
+    filter: drop-shadow(0 0 6px #fde047);
+    animation: boltFlicker 1.2s infinite;
+}
+
+@keyframes boltFlicker {
+    0%, 80%, 100% { opacity: 0; transform: scale(0.8); }
+    85%, 95% { opacity: 1; transform: scale(1.1); }
+}
+
+/* Cloudy Sun */
+.cloudy-sun-art .sun-behind {
+    position: absolute;
+    top: 4px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fde047 30%, #f59e0b 100%);
+    box-shadow: 0 0 14px rgba(253, 224, 71, 0.8);
+}
+
+.cloudy-sun-art .cloud-body {
+    position: absolute;
+    bottom: 6px;
+    left: 3px;
+    width: 36px;
+    height: 18px;
+    background: #cbd5e1;
+    border-radius: 12px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+
+.cloudy-sun-art .cloud-body::after {
+    content: '';
+    position: absolute;
+    top: -9px;
+    left: 8px;
+    width: 18px;
+    height: 18px;
+    background: #f1f5f9;
+    border-radius: 50%;
+}
+
+/* ===================================================
+   NIGHT ART & CLOUDY NIGHT ART
+   =================================================== */
+/* Night Sky: Moon Crescent & Twinkling Stars */
+.night-art .moon-crescent {
+    position: absolute;
+    top: 50%;
+    left: 45%;
+    transform: translate(-50%, -50%);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    box-shadow: 6px 4px 0 0 #fef08a, 0 0 16px rgba(254, 240, 138, 0.7);
+    animation: moonGlow 3s infinite ease-in-out alternate;
+}
+
+@keyframes moonGlow {
+    0% { filter: drop-shadow(0 0 4px #fef08a); }
+    100% { filter: drop-shadow(0 0 12px #38bdf8); }
+}
+
+.night-art .night-star {
+    position: absolute;
+    color: #fef08a;
+    font-size: 0.65rem;
+    line-height: 1;
+    animation: starTwinkle 2s infinite ease-in-out alternate;
+}
+
+.night-art .night-star.s1 {
+    top: 6px;
+    right: 8px;
+}
+
+.night-art .night-star.s2 {
+    bottom: 8px;
+    left: 6px;
+    font-size: 0.55rem;
+    animation-delay: 1s;
+}
+
+@keyframes starTwinkle {
+    0% { opacity: 0.3; transform: scale(0.7); }
+    100% { opacity: 1; transform: scale(1.1); text-shadow: 0 0 8px #fef08a; }
+}
+
+/* Cloudy Night: Moon Behind Night Cloud */
+.cloudy-night-art .moon-behind {
+    position: absolute;
+    top: 3px;
+    right: 7px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    box-shadow: 5px 3px 0 0 #fef08a, 0 0 14px rgba(254, 240, 138, 0.65);
+    animation: moonGlow 3s infinite ease-in-out alternate;
+}
+
+.cloudy-night-art .night-cloud {
+    position: absolute;
+    bottom: 6px;
+    left: 3px;
+    width: 36px;
+    height: 18px;
+    background: #334155;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+}
+
+.cloudy-night-art .night-cloud::after {
+    content: '';
+    position: absolute;
+    top: -9px;
+    left: 8px;
+    width: 18px;
+    height: 18px;
+    background: #475569;
+    border-radius: 50%;
+}
+
+/* Metrics */
+.weather-info-col {
+    flex: 1;
+}
+
+.weather-temp-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 0.35rem;
+}
+
+.weather-temp {
+    font-family: var(--font-heading);
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+}
+
+.weather-desc {
+    font-size: 0.8rem;
+    color: var(--ocean-cyan);
+    font-weight: 600;
+}
+
+.weather-details-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.74rem;
+    color: var(--text-secondary);
+}
+
+.weather-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.weather-detail-item b {
+    color: #fff;
+}
+
+.aqi-badge {
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    border: 1px solid currentColor;
+}
+
+/* ===================================================
+   BENTO GMAIL (KẾ BÊN SETUP)
+   =================================================== */
+.bento-gmail {
+    grid-column: span 2;
+    grid-row: span 1;
+    padding: 1.8rem 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.75), rgba(11, 27, 54, 0.85));
+    border: 1px solid rgba(56, 189, 248, 0.28);
+}
+
+.bento-gmail:hover {
+    border-color: #ea4335;
+    box-shadow: 0 15px 40px rgba(234, 67, 53, 0.15), 0 0 25px rgba(0, 242, 254, 0.1);
+}
+
+.gmail-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.gmail-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: rgba(234, 67, 53, 0.15);
+    border: 1px solid rgba(234, 67, 53, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ea4335;
+    font-size: 1.35rem;
+    position: relative;
+}
+
+.pulse-dot-gmail {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+}
+
+.gmail-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0, 242, 254, 0.08);
+    border: 1px solid rgba(0, 242, 254, 0.25);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    color: var(--ocean-cyan);
+    font-weight: 600;
+}
+
+.gmail-body h4 {
+    color: #fff;
+    font-size: 1.1rem;
+    font-family: var(--font-heading);
+    margin-bottom: 0.45rem;
+}
+
+.gmail-address-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(3, 7, 18, 0.65);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 6px 14px;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+}
+
+.gmail-address {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #38bdf8;
+    letter-spacing: 0.5px;
+}
+
+.gmail-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    margin-bottom: 1rem;
+}
+
+.gmail-actions {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.btn-gmail-send {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #0284c7, #00f2fe);
+    color: #030712;
+    padding: 8px 18px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+}
+
+.btn-gmail-send:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 242, 254, 0.5);
+    color: #000;
+}
+
+.btn-gmail-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-gmail-copy:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: #fff;
+}
+
+.btn-gmail-copy.copied {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    color: #10b981;
+}
+
+.zalo-guide-hint {
+    font-size: 0.68rem;
+    background: rgba(0, 132, 255, 0.15);
+    border: 1px solid rgba(0, 132, 255, 0.35);
+    color: #38bdf8;
+    padding: 2px 6px;
+    border-radius: 6px;
+    margin-top: 2px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+

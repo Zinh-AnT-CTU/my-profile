@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vĩnh An | Chuyên Gia Kiến Trúc Phần Mềm & Trải Nghiệm Số</title>
+
+    <!-- Meta Tags & SEO -->
+    <meta name="description"
+        content="Portfolio chuyên nghiệp của Vĩnh An - Chuyên gia kiến trúc phần mềm, phát triển web hiệu năng cao và thiết kế trải nghiệm số đột phá.">
+    <meta name="keywords"
+        content="Vĩnh An, Software Architect, Fullstack Developer, Web Design, Creative Technologist, UI/UX, Deep Ocean Portfolio">
+    <meta name="theme-color" content="#030712">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Canvas Đồ Họa Đại Dương Sâu 60FPS -->
+    <canvas id="ocean-canvas"></canvas>
+
+    <!-- ===================================================
+         MODAL HỎI BẬT ÂM THANH MÔ PHỎNG KHI VỪA VÀO TRANG
+         =================================================== -->
+    <div id="audio-modal" class="audio-modal-overlay">
+        <div class="audio-modal-card">
+            <div class="modal-icon-wrap">
+                <i class="fa-solid fa-water"></i>
+                <div class="sonar-ring"></div>
+                <div class="sonar-ring"></div>
+            </div>
+            <h2>TRẢI NGHIỆM ĐẠI DƯƠNG SÂU</h2>
+            <p>Trang web được tích hợp hệ thống âm thanh mô phỏng đại dương 2 giai đoạn: Giai đoạn 1 tiếng gió biển và
+                hải âu; Giai đoạn 2 tiếng nước óc ách hydrophone cùng tiếng hú du dương tần số cao của Cá voi sát thủ
+                (Orca) & Cá heo. Bạn có muốn bật âm thanh để trải nghiệm trọn vẹn không?</p>
+            <div class="modal-actions">
+                <button id="btn-sound-yes" class="btn btn-ocean">
+                    <i class="fa-solid fa-volume-high"></i>
+                    <span>Có, Bật Âm Thanh</span>
+                </button>
+                <button id="btn-sound-no" class="btn btn-outline-ocean">
+                    <i class="fa-solid fa-volume-xmark"></i>
+                    <span>Không, Xem Im Lặng</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================
+         FLOATING HUD: ĐỘ SÂU ĐẠI DƯƠNG & ÂM THANH
+         =================================================== -->
+    <aside class="ocean-hud">
+        <div class="hud-depth-card">
+            <div class="depth-bar-track">
+                <div id="depth-progress-fill" class="depth-bar-fill"></div>
+            </div>
+            <div class="depth-info">
+                <span class="depth-label" id="depth-zone">Mặt Biển (0m)</span>
+                <span class="depth-value" id="depth-meter">0 m</span>
+            </div>
+        </div>
+
+        <button id="hud-sound-toggle" class="hud-sound-btn" title="Bật/Tắt âm thanh môi trường biển">
+            <div class="sound-eq muted">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+            <span>Âm thanh: <b class="sound-status-text">Tắt</b></span>
+        </button>
+
+        <button id="hud-sound-test" class="hud-sound-btn" title="Nghe thử tiếng Cá voi sát thủ & Cá heo"
+            style="font-size: 0.8rem; padding: 0.5rem 1rem; border-color: rgba(0, 242, 254, 0.4);">
+            <i class="fa-solid fa-music" style="color: var(--ocean-cyan);"></i>
+            <span>Thử Tiếng Orca & Cá Heo</span>
+        </button>
+    </aside>
+
+    <!-- ===================================================
+         NAVBAR
+         =================================================== -->
+    <nav class="navbar">
+        <a href="#home" class="logo">
+            <span>Vĩnh<span class="highlight-cyan">An</span>.</span>
+            <span class="logo-badge">ARCHITECT</span>
+        </a>
+
+        <ul class="nav-links">
+            <li><a href="#home">Trang Chủ</a></li>
+            <li><a href="#services">Dịch Vụ</a></li>
+            <li><a href="#ocean-chase">Cuộc Săn</a></li>
+            <li><a href="#about">Về Tôi</a></li>
+            <li><a href="#ocean-floor">Đáy Biển</a></li>
+        </ul>
+
+        <div class="nav-cta">
+            <button id="nav-sound-toggle" class="btn btn-outline-ocean"
+                style="padding: 0.5rem 1.2rem; font-size: 0.85rem;">
+                <i class="fa-solid fa-headphones"></i>
+                <span class="sound-status-text">Tắt</span>
+            </button>
+            <a href="#ocean-floor" class="btn btn-ocean" style="padding: 0.5rem 1.4rem; font-size: 0.85rem;">
+                <span>Hợp Tác</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+    </nav>
+
+    <!-- ===================================================
+         WEATHER WIDGET: THÔNG BÁO THỜI TIẾT & AQI CẦN THƠ
+         (Chỉ hiển thị ở tầng mặt biển Hero 0m, lặn xuống biển sẽ không đi theo)
+         =================================================== -->
+    <!-- ===================================================
+         WEATHER & TIME WIDGET: CẦN THƠ (GMT+7)
+         Hỗ trợ Thu Gọn (Compact Pill) & Mở Rộng Chi Tiết
+         =================================================== -->
+    <aside id="weather-widget" class="weather-widget is-collapsed" aria-label="Thời tiết & Giờ Cần Thơ">
+        <!-- NÚT THU GỌN MINI (Hiển thị mặc định: icon mây/trời + nhiệt độ) -->
+        <button id="weather-toggle-btn" class="weather-compact-pill" type="button"
+            title="Nhấp để xem chi tiết thời tiết & giờ GMT+7 Cần Thơ" aria-expanded="false">
+            <div id="weather-compact-icon" class="weather-compact-icon">
+                <!-- Icon mây, mặt trời, trăng thu nhỏ do weather.js render -->
+            </div>
+            <span id="weather-compact-temp" class="weather-compact-temp">--°C</span>
+            <span class="weather-expand-arrow" aria-hidden="true">
+                <i class="fa-solid fa-chevron-down"></i>
+            </span>
+        </button>
+
+        <!-- BẢNG CHI TIẾT ĐẦY ĐỦ (EXPANDED CARD) -->
+        <div class="weather-card">
+            <div class="weather-card-top">
+                <div class="weather-location">
+                    <i class="fa-solid fa-location-dot" style="color: #ef4444;"></i>
+                    <span class="city-name">Cần Thơ, VN</span>
+                    <span class="live-dot" title="Đồng bộ thời gian thực GMT+7 qua API"></span>
+                </div>
+                <!-- Khung giờ GMT+7 & Trạng thái bầu trời -->
+                <div class="weather-clock-pill" title="Giờ địa phương Cần Thơ (GMT+7)">
+                    <i class="fa-regular fa-clock" style="color: var(--ocean-cyan);"></i>
+                    <span id="live-gmt7-clock">--:--:--</span>
+                    <span id="sky-phase-tag" class="sky-phase-tag">Ban Ngày</span>
+                </div>
+                <!-- Nút thu gọn lại -->
+                <button id="weather-collapse-btn" class="weather-collapse-btn" type="button"
+                    title="Thu gọn lại thành biểu tượng nhỏ">
+                    <i class="fa-solid fa-chevron-up"></i>
+                </button>
+            </div>
+
+            <!-- Các nút chuyển chế độ thời tiết & thời gian -->
+            <div class="weather-mode-switch">
+                <button id="weather-btn-sunny" class="weather-mode-pill" title="Mô phỏng: Trời Nắng">
+                    <i class="fa-solid fa-sun"></i>
+                    <span>Nắng</span>
+                </button>
+                <button id="weather-btn-rainy" class="weather-mode-pill" title="Mô phỏng: Trời Mưa">
+                    <i class="fa-solid fa-cloud-rain"></i>
+                    <span>Mưa</span>
+                </button>
+                <button id="weather-btn-night" class="weather-mode-pill" title="Mô phỏng: Bầu Trời Đêm">
+                    <i class="fa-solid fa-moon"></i>
+                    <span>Đêm</span>
+                </button>
+                <button id="weather-btn-auto" class="weather-mode-pill active"
+                    title="Tự động theo thời gian thực GMT+7 & thời tiết Cần Thơ">
+                    <i class="fa-solid fa-satellite-dish"></i>
+                    <span>Thực Tế</span>
+                </button>
+            </div>
+
+            <div class="weather-card-body">
+                <div id="weather-icon-visual" class="weather-icon-visual">
+                    <!-- Icon do weather.js render -->
+                </div>
+                <div class="weather-info-col">
+                    <div class="weather-temp-row">
+                        <span id="weather-temp" class="weather-temp">31°C</span>
+                        <span id="weather-desc" class="weather-desc">Nhiều Mây</span>
+                    </div>
+                    <div class="weather-details-row">
+                        <div class="weather-detail-item" title="Độ ẩm không khí tại Cần Thơ">
+                            <i class="fa-solid fa-droplet" style="color: #38bdf8;"></i>
+                            <span>Ẩm: <b id="weather-humidity">66%</b></span>
+                        </div>
+                        <div class="weather-detail-item" title="Chỉ số chất lượng không khí AQI tại Cần Thơ">
+                            <i class="fa-solid fa-wind" style="color: #34d399;"></i>
+                            <span>AQI: <b id="weather-aqi-val">35</b></span>
+                            <span id="weather-aqi-badge" class="aqi-badge">Tốt</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main>
+        <!-- ===================================================
+             HERO SECTION: MẶT BIỂN & BẦU TRỜI (ĐỘ SÂU 0M)
+             =================================================== -->
+        <section id="home" class="hero">
+            <div class="hero-content" id="hero-content">
+                <span class="hero-badge badge" id="hero-badge">
+                    <span class="pulse-dot-cyan"></span>
+                    <span>Xin chào, tôi là Vĩnh An 👋</span>
+                </span>
+                <h1 id="hero-title">
+                    <span class="hero-title-main">Theo đuổi đam mê qua</span><br>
+                    <span class="highlight-gradient">Dòng Code & Bài Toán</span>
+                </h1>
+                <p class="hero-desc">Là một học sinh cấp 3 với khát khao khám phá công nghệ, mình xem lập trình không
+                    chỉ là đam mê mà còn
+                    là hành trình để rèn luyện tư duy, giải quyết vấn đề và học hỏi những điều mới mẻ mỗi ngày!✨</p>
+                <div class="hero-btns">
+                    <a href="#services" class="btn btn-ocean magnetic-btn">
+                        <span>Khám Phá Dịch Vụ</span>
+                        <i class="fa-solid fa-anchor"></i>
+                    </a>
+                    <a href="#ocean-chase" class="btn btn-outline-ocean magnetic-btn">
+                        <span>Lặn Xuống Biển Sâu</span>
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <div class="hero-avatar-frame">
+                    <img src="images/main-avatar.png" alt="Vĩnh An" class="hero-avatar-img"
+                        style="object-position: 28% 45%;">
+                    <div class="avatar-depth-badge">
+                        <div>
+                            <div class="avatar-badge-title">Vĩnh An</div>
+                            <div class="avatar-badge-sub">Lead Tech & Creative Dev</div>
+                        </div>
+                        <i class="fa-solid fa-circle-check" style="color: var(--ocean-cyan); font-size: 1.2rem;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scroll-hint-surface">
+                <span>Cuộn xuống để bắt đầu lặn sâu</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+        </section>
+
+        <!-- ===================================================
+             SERVICES SECTION: VÙNG HOÀNG HÔN (ĐỘ SÂU 150M)
+             =================================================== -->
+        <section id="services" class="services-section">
+            <div class="section-header">
+                <span class="depth-tag"><i class="fa-solid fa-water"></i> Độ Sâu: 150m — Vùng Ánh Sáng</span>
+                <h2>Năng Lực & Dịch Vụ Cốt Lõi</h2>
+                <p>Những giải pháp toàn diện và tối ưu nhất giúp doanh nghiệp bứt phá doanh thu trên môi trường số</p>
+            </div>
+
+            <div class="services-grid">
+                <!-- Dịch vụ 1: Kiến trúc Web (Click hiện thông báo hoàn thành sớm) -->
+                <div class="service-card magnetic-btn service-card-notice" data-service-name="Kiến Trúc Web Cao Cấp">
+                    <div class="service-icon-box"
+                        style="background: linear-gradient(135deg, #0284c7, #00f2fe); color: #fff;">
+                        <i class="fa-solid fa-laptop-code"></i>
+                    </div>
+                    <h3>Kiến Trúc Web Cao Cấp</h3>
+                    <p>Xây dựng hệ thống web toàn diện từ A-Z với công nghệ tiên tiến (React, Next.js, Vue, Node.js),
+                        chịu tải hàng trăm nghìn truy cập đồng thời với tốc độ mượt mà.</p>
+                    <div class="service-card-action">
+                        <span>Chi tiết giải pháp <i class="fa-solid fa-chevron-right"></i></span>
+                    </div>
+                </div>
+
+                <!-- Dịch vụ 2: UI/UX & Đồ Họa 3D (Click hiện thông báo hoàn thành sớm) -->
+                <div class="service-card magnetic-btn service-card-notice"
+                    data-service-name="UI/UX & Đồ Họa 3D Tương Tác">
+                    <div class="service-icon-box"
+                        style="background: linear-gradient(135deg, #8b5cf6, #d946ef); color: #fff;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <h3>UI/UX & Đồ Họa 3D Tương Tác</h3>
+                    <p>Thiết kế trải nghiệm người dùng đầy cảm xúc, kết hợp đồ họa chuyển động 3D / WebGL mượt mà, gây
+                        ấn tượng thị giác sâu sắc và nâng cao tỷ lệ chuyển đổi khách hàng.</p>
+                    <div class="service-card-action">
+                        <span>Chi tiết giải pháp <i class="fa-solid fa-chevron-right"></i></span>
+                    </div>
+                </div>
+
+                <!-- Dịch vụ 3: Thương Mại & Tự Động Hóa -> DẪN TRỰC TIẾP TỚI GIAO DIỆN shop.html -->
+                <a href="shop.html" class="service-card magnetic-btn service-shop-active"
+                    title="Truy cập giao diện Cửa Hàng Premium Store" style="text-decoration: none;">
+                    <div class="service-icon-box"
+                        style="background: linear-gradient(135deg, #10b981, #06b6d4); color: #fff;">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </div>
+                    <div class="service-live-badge">
+                        <span class="live-pulse-dot"></span>
+                        <span>Đã có giao diện Store</span>
+                    </div>
+                    <h3>Thương Mại & Tự Động Hóa</h3>
+                    <p>Hệ thống bán hàng và quản trị dữ liệu thông minh, tích hợp cổng thanh toán tự động, đồng bộ API
+                        đa nền tảng giúp tối ưu chi phí vận hành.</p>
+                    <div class="service-shop-btn">
+                        <span>Vào Cửa Hàng Premium <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+                    </div>
+                </a>
+
+                <!-- Dịch vụ 4: Hiệu Năng & Bảo Mật Số (Click hiện thông báo hoàn thành sớm) -->
+                <div class="service-card magnetic-btn service-card-notice" data-service-name="Hiệu Năng & Bảo Mật Số">
+                    <div class="service-icon-box"
+                        style="background: linear-gradient(135deg, #f59e0b, #ef4444); color: #fff;">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3>Hiệu Năng & Bảo Mật Số</h3>
+                    <p>Tối ưu hóa cấu trúc mã nguồn, tăng tốc độ tải trang dưới 1 giây, bảo mật dữ liệu đa lớp và chuẩn
+                        SEO On-page.</p>
+                    <div class="service-card-action">
+                        <span>Chi tiết giải pháp <i class="fa-solid fa-chevron-right"></i></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================
+             INTERACTIVE CHASE: CÁ MẬP ĐUỔI ĐÀN CÁ NHỎ (ĐỘ SÂU 350M)
+             (Thay thế hoạt cảnh ném lao cũ bằng tương tác đại dương sống động)
+             =================================================== -->
+        <section id="ocean-chase" class="chase-section">
+            <div class="chase-sticky">
+                <!-- Cảnh báo vùng săn mồi -->
+                <div class="chase-hud-header" id="chase-alert">
+                    <div class="chase-warning-pill">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Vùng Biển Sâu 1350m: Cuộc Rượt Đuổi Tốc Độ</span>
+                    </div>
+                    <div class="chase-hint">Cuộn chuột tiếp tục để điều khiển cá mập & đàn cá nhỏ lướt qua màn hình ⬇
+                    </div>
+                </div>
+
+                <!-- Bọt nước xé sóng khi rượt đuổi -->
+                <div class="chase-bubbles-container" id="chase-bubbles"></div>
+
+                <!-- ĐÀN CÁ NHỎ CHẠY TRƯỚC (QUAY ĐẦU QUA PHẢI, BƠI THÁO CHẠY TỰ NHIÊN) -->
+                <div class="fish-school-realistic" id="chase-fish-school">
+                    <img src="images/realistic-fish-school.png" alt="Đàn cá nhỏ tháo chạy" class="chase-img-fish">
+                </div>
+
+                <!-- CÁ MẬP SĂN MỒI RƯỢT ĐUỔI PHÍA SAU (THÂN LIỀN KHỐI UỐN LƯỢN VẨY ĐUÔI SIÊU THỰC) -->
+                <div class="predator-shark-realistic" id="chase-shark">
+                    <img src="images/realistic-shark.png" alt="Cá mập săn mồi đuổi theo" class="chase-img-shark">
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================
+             ABOUT SECTION: VỀ TÔI (BENTO GRID - ĐỘ SÂU 800M)
+             (Xuất hiện ngay sau khi cá mập và đàn cá thoát khỏi màn hình)
+             =================================================== -->
+        <section id="about" class="about-section">
+            <div class="section-header">
+                <span class="depth-tag"><i class="fa-solid fa-water"></i> Độ Sâu: 2500m — Vùng Nửa Đêm</span>
+                <h2>Về Tôi & Dấu Ấn Năng Lực</h2>
+                <p>Khám phá bản lĩnh, phong cách làm việc và các kênh kết nối trực tiếp cùng Vĩnh An</p>
+            </div>
+
+            <div class="bento-grid">
+                <!-- Bento Block 1: Profile cá nhân chính -->
+                <div class="bento-item bento-profile">
+                    <!-- Chi tiết trang trí hải dương học (Rong biển, đá ngầm, sao biển dạ quang, san hô, bọt khí) -->
+                    <div class="bento-ocean-decor" aria-hidden="true">
+                        <!-- Rong biển đung đưa ở góc dưới phải -->
+                        <svg class="decor-seaweed" viewBox="0 0 120 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path class="weed-stem weed-1" d="M30 180 Q15 120 40 75 T25 10" stroke="url(#seaweedGrad1)"
+                                stroke-width="5" stroke-linecap="round" fill="none" />
+                            <path class="weed-stem weed-2" d="M60 180 Q85 125 55 80 T75 15" stroke="url(#seaweedGrad2)"
+                                stroke-width="4.5" stroke-linecap="round" fill="none" />
+                            <path class="weed-stem weed-3" d="M90 180 Q70 135 95 95 T82 35" stroke="url(#seaweedGrad1)"
+                                stroke-width="4" stroke-linecap="round" fill="none" />
+                            <defs>
+                                <linearGradient id="seaweedGrad1" x1="0" y1="1" x2="0" y2="0">
+                                    <stop offset="0%" stop-color="#064e3b" stop-opacity="0.85" />
+                                    <stop offset="60%" stop-color="#10b981" stop-opacity="0.65" />
+                                    <stop offset="100%" stop-color="#34d399" stop-opacity="0.3" />
+                                </linearGradient>
+                                <linearGradient id="seaweedGrad2" x1="0" y1="1" x2="0" y2="0">
+                                    <stop offset="0%" stop-color="#047857" stop-opacity="0.85" />
+                                    <stop offset="60%" stop-color="#059669" stop-opacity="0.65" />
+                                    <stop offset="100%" stop-color="#6ee7b7" stop-opacity="0.3" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+
+                        <!-- Rạn đá ngầm dưới đáy thẻ -->
+                        <svg class="decor-rock" viewBox="0 0 160 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M0 70 L20 40 L50 25 L88 48 L125 22 L150 42 L160 70 Z" fill="url(#rockGrad)"
+                                opacity="0.6" />
+                            <defs>
+                                <linearGradient id="rockGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#1e293b" />
+                                    <stop offset="100%" stop-color="#091428" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+
+                        <!-- Sao biển dạ quang -->
+                        <div class="decor-starfish" title="Sao biển dạ quang">
+                            <svg viewBox="0 0 100 100" class="starfish-icon">
+                                <polygon points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36"
+                                    fill="url(#starGrad)" />
+                                <circle cx="50" cy="50" r="7" fill="#ffe4e6" opacity="0.85" />
+                                <defs>
+                                    <linearGradient id="starGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#fb7185" />
+                                        <stop offset="50%" stop-color="#f43f5e" />
+                                        <stop offset="100%" stop-color="#e11d48" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+
+                        <!-- San hô & Vỏ sò góc trái đáy -->
+                        <span class="decor-coral" title="San hô đỏ">🪸</span>
+                        <span class="decor-shell" title="Vỏ sò ngọc trai">🐚</span>
+
+                        <!-- Bọt khí đại dương li ti -->
+                        <span class="decor-bubble b1"></span>
+                        <span class="decor-bubble b2"></span>
+                        <span class="decor-bubble b3"></span>
+                    </div>
+
+                    <div class="bento-profile-top">
+                        <div class="bento-avatar-wrap">
+                            <img src="images/cute-avatar.jpg" alt="Vĩnh An" class="bento-avatar-img"
+                                onerror="this.src='images/main-avatar.jpg'">
+                            <div class="bento-status-pill">
+                                <span class="pulse-dot"></span>
+                                <span>Đang nghe nhạc và coding 🍵🎶</span>
+                            </div>
+                        </div>
+                        <div class="bento-name-box">
+                            <h3>Vĩnh An</h3>
+                            <span class="bento-title-badge">Lead Architect & Fullstack Developer</span>
+                        </div>
+                    </div>
+
+                    <!-- 2 dòng đầu: Chữ to, nhiều màu gradient rực rỡ bắt mắt -->
+                    <div class="bento-bio-headline">
+                        <div class="bio-title-gradient-1">
+                            <span>🚀 Student ban ngày, developer ban đêm.</span>
+                        </div>
+                        <div class="bio-title-gradient-2">
+                            <span>Đam mê code, giải toán, nghiên cứu khoa học và nghe nhạc Fonk 🎧⚡</span>
+                        </div>
+                    </div>
+
+                    <!-- Phần nội dung: Chữ to hơn, căn đều 2 lề, icon emoji sinh động -->
+                    <div class="bento-bio-content">
+                        <p class="bio-para">
+                            👋 <b>Xin chào!</b> Mình là học sinh <b>CTU Elite High School K15</b> 🏫. Với niềm đam mê
+                            Code 💻 và Toán học 📐 từ những năm cấp 2, mình đã từng tham gia và đoạt giải 🏆 trong rất
+                            nhiều cuộc thi như sáng tạo <b>STEM</b> cấp trường, các cuộc thi <b>Robotics & Robothon</b>
+                            từ cấp trường tới cấp quốc tế do <b>ORC</b> và <b>Eduspec Holdings Berhad</b> tổ chức 🌐.
+                            Đây cũng chính là cơ duyên quý báu đưa mình biết đến <b>AI</b> — một chân trời công nghệ vừa
+                            vô cùng thú vị vừa đầy thử thách 🧠✨.
+                        </p>
+                        <p class="bio-para">
+                            🔬 Bên cạnh đó, mình còn tích cực tham gia các cuộc thi về Nghiên cứu như <b>Khoa học Kỹ
+                                thuật</b> 💡, cuộc thi <b>Sáng tạo Thanh thiếu niên nhi đồng</b> 🎨 và hội thi <b>Tin
+                                học trẻ</b> các cấp 💻. Những trải nghiệm này giúp mình không ngừng rèn luyện tư duy
+                            logic, khả năng giải quyết vấn đề và học hỏi những tri thức mới mẻ mỗi ngày 📚. Mình thực sự
+                            yêu việc hằng ngày cặm cụi vào từng dòng code, chau chuốt từng câu lệnh tỉ mỉ ⌨️🔥.
+                        </p>
+                        <p class="bio-para">
+                            🌾 À! Xíu thì quên nữaa, là người con vùng đất Tây Đô <b>Cần Thơ</b> yêu dấu 🏞️, mình luôn
+                            mong muốn đóng góp một phần công sức nhỏ bé của mình để phát triển công nghệ tại nơi đây 🚀.
+                            Mình biết code <b>JavaScript 💛, HTML 🌐, Python 🐍, C++ ⚡</b> và <b>Rust 🦀</b> (ngôn ngữ
+                            này mình vẫn đang miệt mài học hỏi). Còn đây là chiếc website đại dương mình tự mày mò làm
+                            trong 1 ngày Chủ Nhật rảnh rỗi không biết làm gìii hihi 🌊☕✨.
+                        </p>
+                    </div>
+
+                    <div class="bento-badges">
+                        <span class="tech-badge">Fullstack Architecture</span>
+                        <span class="tech-badge">UI/UX & WebGL</span>
+                        <span class="tech-badge">Performance 99+</span>
+                        <span class="tech-badge">Cloud & DevOps</span>
+                    </div>
+                </div>
+
+                <!-- Bento Block 2: Hình ảnh thành tích thực tế tại sự kiện -->
+                <div class="bento-item bento-achievement">
+                    <img src="images/z7698640675779_ad24f6ba2acb3982a62caef701f0af32.jpg"
+                        alt="Vĩnh An phát biểu tại sự kiện 2026" class="achievement-img">
+                    <div class="achievement-overlay">
+                        <h4>Đại Diện Phát Biểu & Lãnh Đạo Hoạt Động (2026)</h4>
+                        <p>Bản lĩnh sân khấu, kỹ năng truyền cảm hứng & trách nhiệm cộng đồng</p>
+                    </div>
+                </div>
+
+                <!-- Bento Block 3: YouTube -->
+                <a href="https://www.youtube.com/@AnVinh-px9qs" target="_blank" rel="noopener noreferrer"
+                    class="bento-item bento-social youtube">
+                    <div class="social-icon-circle"><i class="fa-brands fa-youtube"></i></div>
+                    <b>YouTube</b>
+                    <span>Kênh video chia sẻ</span>
+                </a>
+
+                <!-- Bento Block 4: Facebook -->
+                <a href="https://www.facebook.com/share/19dCGwr4GE/" target="_blank" rel="noopener noreferrer"
+                    class="bento-item bento-social facebook">
+                    <div class="social-icon-circle"><i class="fa-brands fa-facebook-f"></i></div>
+                    <b>Facebook</b>
+                    <span>Kết nối & Trao đổi</span>
+                </a>
+
+                <!-- Bento Block 5: Zalo -->
+                <a href="https://zalo.me/0961978134" target="_blank" rel="noopener noreferrer" id="bento-zalo-link"
+                    class="bento-item bento-social zalo" title="Nhấp để nhắn tin Zalo (https://zalo.me/sdt)">
+                    <div class="social-icon-circle"><b style="font-size: 1.4rem;">Z</b></div>
+                    <b>Zalo Chat</b>
+                    <span>Tư vấn dự án nhanh</span>
+                    <span class="zalo-guide-hint"><i class="fa-solid fa-qrcode"></i> zalo.me/sdt</span>
+                </a>
+
+                <!-- Bento Block 6: Telegram -->
+                <a href="https://t.me/Zinh_antt" target="_blank" rel="noopener noreferrer"
+                    class="bento-item bento-social telegram">
+                    <div class="social-icon-circle"><i class="fa-brands fa-telegram"></i></div>
+                    <b>Telegram</b>
+                    <span>@Zinh_antt</span>
+                </a>
+
+                <!-- Bento Block 7: Instagram -->
+                <a href="https://www.instagram.com/zinh_ann/" target="_blank" rel="noopener noreferrer"
+                    class="bento-item bento-social instagram">
+                    <div class="social-icon-circle"><i class="fa-brands fa-instagram"></i></div>
+                    <b>Instagram</b>
+                    <span>@zinh_ann</span>
+                </a>
+
+                <!-- Bento Block 8: Github -->
+                <a href="https://github.com/Ant-coder-AI" target="_blank" rel="noopener noreferrer"
+                    class="bento-item bento-social github">
+                    <div class="social-icon-circle"><i class="fa-brands fa-github"></i></div>
+                    <b>GitHub</b>
+                    <span>Kho lưu trữ mã nguồn</span>
+                </a>
+
+                <!-- Bento Block 9: Không gian làm việc & Triết lý -->
+                <div class="bento-item bento-setup">
+                    <img src="images/setup-image.jpg" alt="Góc làm việc công nghệ" class="setup-img">
+                    <div class="setup-caption">
+                        "Kỷ luật trong tư duy — Đột phá trong từng sản phẩm"
+                    </div>
+                </div>
+
+                <!-- Bento Block 10: Gmail Trực Tiếp Kế Bên Ảnh Setup -->
+                <div class="bento-item bento-gmail">
+                    <div class="gmail-card-header">
+                        <div class="gmail-icon-wrap">
+                            <i class="fa-solid fa-envelope"></i>
+                            <span class="pulse-dot-gmail"></span>
+                        </div>
+                        <div class="gmail-badge">
+                            <i class="fa-solid fa-shield-check"></i>
+                            <span>Hòm Thư Chính Thức</span>
+                        </div>
+                    </div>
+                    <div class="gmail-body">
+                        <h4>Kênh Trao Đổi Qua Email</h4>
+                        <div class="gmail-address-box">
+                            <i class="fa-regular fa-envelope-open" style="color: var(--ocean-cyan);"></i>
+                            <span class="gmail-address" id="gmail-address-text">vinhanct2023@gmail.com</span>
+                        </div>
+                        <p class="gmail-desc">Sẵn sàng nhận yêu cầu kiến trúc phần mềm, tư vấn giải pháp và hợp tác phát
+                            triển web công nghệ cao.</p>
+                    </div>
+                    <div class="gmail-actions">
+                        <a href="mailto:vinhanct2023@gmail.com" class="btn-gmail-send magnetic-btn">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Gửi Thư Ngay</span>
+                        </a>
+                        <button id="btn-copy-gmail" class="btn-gmail-copy magnetic-btn" title="Sao chép địa chỉ Gmail">
+                            <i class="fa-regular fa-copy"></i>
+                            <span id="copy-status-text">Sao Chép</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================
+             OCEAN FLOOR SECTION: ĐÁY BIỂN SÂU (ĐỘ SÂU 3,850M)
+             (Tàu đắm huyền bí, rạn san hô dạ quang & rương vàng)
+             =================================================== -->
+        <section id="ocean-floor" class="ocean-floor-section">
+            <div class="floor-cta-card ocean-floor-card">
+                <span class="floor-tag">
+                    <i class="fa-solid fa-gem"></i>
+                    Đáy Biển Sâu 3,850m — Nơi Kho Báu Đang Chờ Đón
+                </span>
+                <h2>Sẵn Sàng Đưa Dự Án Của Bạn Khám Phá Đỉnh Cao Mới?</h2>
+                <p>Dù là xây dựng một nền tảng web quy mô lớn, tối ưu hóa hệ thống hiện tại hay thiết kế một trải nghiệm
+                    số gây ấn tượng mạnh với đối tác, tôi luôn sẵn sàng đồng hành cùng bạn.</p>
+                <div class="floor-actions">
+                    <a href="https://t.me/Zinh_antt" target="_blank" rel="noopener noreferrer"
+                        class="btn btn-ocean magnetic-btn">
+                        <i class="fa-brands fa-telegram"></i>
+                        <span>Nhắn Tin Telegram Ngay</span>
+                    </a>
+                    <a href="https://www.facebook.com/share/19dCGwr4GE/" target="_blank" rel="noopener noreferrer"
+                        class="btn btn-outline-ocean magnetic-btn">
+                        <i class="fa-brands fa-facebook"></i>
+                        <span>Kết Nối Qua Facebook</span>
+                    </a>
+                    <a href="#home" class="btn btn-outline-ocean magnetic-btn" title="Trở lại mặt biển">
+                        <i class="fa-solid fa-arrow-up"></i>
+                        <span>Lên Lại Mặt Biển</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ===================================================
+         FOOTER
+         =================================================== -->
+    <footer>
+        <div class="footer-left">
+            <span>&copy; 2026 <b>Vĩnh An</b>. All rights reserved.</span>
+            <span class="footer-coords"><i class="fa-solid fa-location-crosshairs"></i> Vực Thẳm Mariana • 11°21′N
+                142°12′E (Độ Sâu: 3,850m)</span>
+        </div>
+
+        <div class="footer-socials">
+            <a href="https://github.com/Ant-coder-AI" target="_blank" rel="noopener noreferrer" title="GitHub"><i
+                    class="fa-brands fa-github"></i></a>
+            <a href="https://www.facebook.com/share/19dCGwr4GE/" target="_blank" rel="noopener noreferrer"
+                title="Facebook"><i class="fa-brands fa-facebook"></i></a>
+            <a href="https://www.youtube.com/@AnVinh-px9qs" target="_blank" rel="noopener noreferrer" title="YouTube"><i
+                    class="fa-brands fa-youtube"></i></a>
+            <a href="https://t.me/Zinh_antt" target="_blank" rel="noopener noreferrer" title="Telegram"><i
+                    class="fa-brands fa-telegram"></i></a>
+        </div>
+    </footer>
+
+    <!-- Toast thông báo dịch vụ đang phát triển -->
+    <div id="service-toast" class="service-toast" role="alert" aria-live="assertive">
+        <div class="toast-card">
+            <div class="toast-icon-wrap">
+                <i class="fa-solid fa-hourglass-half"></i>
+            </div>
+            <div class="toast-content">
+                <div class="toast-title">Thông Báo Dự Án</div>
+                <div class="toast-message">Web chưa xong. Nhưng mà cứ ib mình vẫn làm bth nhéee 💗 </div>
+            </div>
+            <button class="toast-close" id="toast-close-btn" aria-label="Đóng thông báo">&times;</button>
+        </div>
+    </div>
+
+    <!-- Các kịch bản JavaScript -->
+    <script src="js/ocean-audio.js"></script>
+    <script src="js/ocean-canvas.js"></script>
+    <script src="js/weather.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
